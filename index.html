@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>轻卡日记</title>
+<meta name="description" content="记录每天吃什么、热量和步数的私人健康工具">
+<meta name="theme-color" content="#16a34a">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <button id="btnPrev" class="icon-btn" aria-label="前一天">‹</button>
+  <button id="dateLabel" class="date-label">
+    <span id="dateText">—</span>
+    <span id="todayChip" class="chip-today hidden">回到今天</span>
+  </button>
+  <button id="btnNext" class="icon-btn" aria-label="后一天">›</button>
+  <div class="topbar-right">
+    <div id="streak" class="streak hidden">🔥 <span id="streakN">0</span> 天</div>
+    <button id="btnSettings" class="icon-btn" aria-label="设置">⚙️</button>
+  </div>
+</header>
+
+<main>
+  <section class="card" id="cardSummary">
+    <div class="card-title" id="summaryTitle">今日热量</div>
+    <div class="hero"><span id="eatenKcal">0</span><span class="hero-unit">千卡</span></div>
+    <div class="hero-sub" id="targetLine">设置目标后开始记录</div>
+    <div class="meter"><div class="meter-fill" id="meterFill"></div></div>
+    <div id="statusLine" class="status"></div>
+    <div class="burn-grid">
+      <div class="burn-item"><span class="burn-label">基础代谢</span><span class="burn-val" id="bmrVal">–</span></div>
+      <div class="burn-item"><span class="burn-label">步数消耗</span><span class="burn-val" id="stepBurnVal">–</span></div>
+      <div class="burn-item"><span class="burn-label">额外运动</span><span class="burn-val" id="extraVal">–</span></div>
+      <div class="burn-item"><span class="burn-label">总消耗</span><span class="burn-val" id="totalOutVal">–</span></div>
+    </div>
+  </section>
+
+  <section class="card" id="cardMacros">
+    <div class="card-title-row">
+      <div class="card-title">三大营养素</div>
+      <span class="card-hint">目标按体重自动算</span>
+    </div>
+    <div class="seg-bar" id="macroBar"></div>
+    <div class="legend daily-legend" aria-hidden="true">
+      <span class="legend-item"><span class="swatch macro-p"></span>蛋白质</span>
+      <span class="legend-item"><span class="swatch macro-c"></span>碳水</span>
+      <span class="legend-item"><span class="swatch macro-f"></span>脂肪</span>
+    </div>
+    <div id="macroRows"></div>
+    <div class="macro-note" id="macroNote"></div>
+  </section>
+
+  <section class="card clickable" id="cardSteps">
+    <div class="card-title-row">
+      <div class="card-title" id="stepsTitle">步数</div>
+      <span class="card-hint">点击填写</span>
+    </div>
+    <div class="steps-row">
+      <div class="hero small"><span id="stepsN">0</span><span class="hero-unit">步</span></div>
+      <div class="steps-sub" id="stepsSub">填写步数后自动估算消耗</div>
+    </div>
+  </section>
+
+  <section class="card" id="cardWater">
+    <div class="card-title-row">
+      <div class="card-title">喝水</div>
+      <div class="card-title-right">
+        <span class="card-hint">1杯 = 250ml · 不计热量</span>
+        <button class="mini-btn" id="waterClear">清零</button>
+      </div>
+    </div>
+    <div class="water-row">
+      <button class="water-btn" id="waterMinus" aria-label="少一杯">−</button>
+      <div class="water-center">
+        <div class="hero small"><span id="waterN">0</span><span class="hero-unit">杯</span></div>
+        <div class="water-dots" id="waterDots"></div>
+      </div>
+      <button class="water-btn" id="waterPlus" aria-label="多一杯">＋</button>
+    </div>
+    <div class="water-sub" id="waterSub"></div>
+  </section>
+
+  <section class="card" id="cardMeals">
+    <div class="card-title-row">
+      <div class="card-title">饮食记录</div>
+      <span class="card-hint" id="mealsTotal">还没有记录</span>
+    </div>
+    <div id="mealSections"></div>
+  </section>
+
+  <section class="card" id="cardDaily">
+    <div class="card-title-row">
+      <div class="card-title" id="dailyTitle">今日小结</div>
+      <button class="mini-btn" id="btnCopySummary">复制小结</button>
+    </div>
+    <div class="seg-bar" id="mealSegBar"></div>
+    <div class="legend daily-legend" id="mealSegLegend" aria-hidden="true"></div>
+    <div class="week-grid" id="dailyFacts"></div>
+    <div class="status" id="dailyVerdict"></div>
+  </section>
+
+  <section class="card" id="cardWeight">
+    <div class="card-title-row">
+      <div class="card-title">体重</div>
+      <button class="mini-btn" id="btnWeight">记录</button>
+    </div>
+    <div class="weight-row">
+      <div class="hero small"><span id="weightNow">–</span><span class="hero-unit">kg</span></div>
+      <div class="weight-deltas" id="weightDeltas"></div>
+    </div>
+    <div id="weightGoal" class="hidden">
+      <div class="meter" style="margin-top:10px"><div class="meter-fill" id="weightGoalFill"></div></div>
+      <div class="hero-sub" id="weightGoalText" style="margin-top:6px"></div>
+    </div>
+    <canvas id="weightChart" height="150" aria-label="近30天体重趋势图"></canvas>
+  </section>
+
+  <section class="card" id="cardTrend">
+    <div class="card-title">趋势推测</div>
+    <div id="trendBody"></div>
+  </section>
+
+  <section class="card" id="cardMeta">
+    <div class="card-title">代谢评估</div>
+    <div id="metaBody"></div>
+  </section>
+
+  <section class="card" id="cardWeek">
+    <div class="card-title" id="weekTitle">本周小结</div>
+    <div class="week-grid" id="weekGrid"></div>
+  </section>
+
+  <section class="card" id="cardWeekly">
+    <div class="card-title-row">
+      <div class="card-title">近7天净差</div>
+      <span class="card-hint">点柱子看详情</span>
+    </div>
+    <div class="legend" aria-hidden="true">
+      <span class="legend-item"><span class="swatch net-blue"></span>热量缺口</span>
+      <span class="legend-item"><span class="swatch net-red"></span>热量盈余</span>
+      <span class="legend-item"><span class="legend-note">灰线 = 目标缺口</span></span>
+    </div>
+    <canvas id="weeklyChart" height="180" aria-label="近7天净差柱状图"></canvas>
+  </section>
+
+  <section class="card" id="cardHeat">
+    <div class="card-title-row">
+      <div class="card-title">近12周热量缺口</div>
+      <span class="card-hint">点格子看详情</span>
+    </div>
+    <div class="legend heat-legend" aria-hidden="true">
+      <span class="legend-item"><span class="swatch heat-blue"></span>有缺口</span>
+      <span class="legend-item"><span class="swatch heat-mid"></span>持平</span>
+      <span class="legend-item"><span class="swatch heat-red"></span>有盈余</span>
+    </div>
+    <canvas id="heatChart" height="126" aria-label="近12周每日热量缺口热力图"></canvas>
+  </section>
+
+  <p class="footnote">数据只保存在这台手机的浏览器里，不联网不上传。换手机或清理浏览器前，请先在「设置 → 导出备份」。</p>
+</main>
+
+<div id="backdrop" class="backdrop hidden"></div>
+<div id="scanWrap" class="scan-wrap hidden">
+  <video id="scanVideo" playsinline muted></video>
+  <button class="scan-cancel" id="scanCancel" aria-label="取消扫码">✕ 取消</button>
+</div>
+<div id="sheet" class="sheet hidden" role="dialog" aria-modal="true"></div>
+<div id="tooltip" class="tooltip hidden"></div>
+<div id="toast" class="toast hidden"></div>
+<button id="installBtn" class="install-btn hidden">📲 安装到手机桌面</button>
+
+<script src="app.js"></script>
+</body>
+</html>
