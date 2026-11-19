@@ -1,7 +1,7 @@
 'use strict';
 // 轻卡日记 Service Worker：缓存优先，离线可用
 // 更新代码后请把 CACHE 版本号 +1
-const CACHE = 'qk-cache-v6';
+const CACHE = 'qk-cache-v7';
 const ASSETS = [
   './',
   './index.html',
